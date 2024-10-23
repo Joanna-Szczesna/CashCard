@@ -9,8 +9,8 @@ SpringBoot, TDD, Security
 |--------|-----------------|-----------------|-----------------------------------------------------------------------------------|
 | POST   | Create          | /cashcards      | create a new resource                                                             |  
 | PUT    | Update          | /cashcards/{id} | Replaces the resource: the entire record is replaced by the object in the Request |
-| GET    | Request Data    | /cashcards/{id} | Get resource                                                                      | 
-| DELETE | delete resource | /cashcards/{id} | Hard delete resource                                                              | 
+| GET    | Read    | /cashcards/{id} | Get resource                                                                      | 
+| DELETE | Delete| /cashcards/{id} | Hard delete resource                                                              | 
 
 
 
@@ -38,6 +38,17 @@ Possible responses HTTP Status
 Example Response Body for successfully operation:
 body type: JSON
 
+```json
+{
+  "id": 97,
+  "amount": 100.25
+}
+```
+
+full Response:
+
+Status Code: 200
+Body:
 ```json
 {
   "id": 97,
