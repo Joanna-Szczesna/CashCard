@@ -123,7 +123,6 @@ class CashcardApplicationTests {
 
     @Nested
     class PostCreate {
-
         @Test
         void whenCreateANewCashCard_ReturnStatusCreated() {
             CashCard newCashCard = new CashCard(null, 250.00, "sarah1");
@@ -133,7 +132,7 @@ class CashcardApplicationTests {
             URI locationOfNewCashCard = createResponse.getHeaders().getLocation();
 
             ResponseEntity<String> getResponse = restTemplate
-                    .withBasicAuth(OWNER_FIRST, PASSWORD_FIRST )
+                    .withBasicAuth(OWNER_FIRST, PASSWORD_FIRST)
                     .getForEntity(locationOfNewCashCard, String.class);
 
             DocumentContext documentContext = JsonPath.parse(getResponse.getBody());
@@ -147,4 +146,21 @@ class CashcardApplicationTests {
         }
     }
 
+    @Nested
+    class Security {
+        @Test
+        void whenUsingBadCredentials_shouldNotReturnACashCard() {
+            String badUsername = "BAD-USER";
+            String badPassword = "BAD-PASSWORD";
+            ResponseEntity<String> response = restTemplate
+                    .withBasicAuth(badUsername, PASSWORD_FIRST)
+                    .getForEntity("/cashcards/99", String.class);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+
+            response = restTemplate
+                    .withBasicAuth(OWNER_FIRST, badPassword)
+                    .getForEntity("/cashcards/99", String.class);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        }
+    }
 }
