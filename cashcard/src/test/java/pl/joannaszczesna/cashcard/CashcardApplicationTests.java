@@ -69,13 +69,22 @@ class CashcardApplicationTests {
             assertThat(cashCardCount).isEqualTo(3);
             assertThat(amounts).containsExactlyInAnyOrder(123.45, 1.0, 150.00);
         }
+
+        @Test
+        void shouldReturnAPageOfCashCards() {
+            ResponseEntity<String> getListResponse = restTemplate.getForEntity("/cashcards?page=0&size=1", String.class);
+            DocumentContext documentContext = JsonPath.parse(getListResponse.getBody());
+            JSONArray page = documentContext.read("$[*]");
+
+            assertThat(getListResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(page.size()).isEqualTo(1);
+        }
     }
 
     @Nested
     class PostCreate {
 
         @Test
-        @DirtiesContext
         void whenCreateANewCashCard_ReturnStatusCreated() {
             CashCard newCashCard = new CashCard(null, 250.00);
             ResponseEntity<Void> createResponse = restTemplate.postForEntity(PATH_CASHCARDS, newCashCard, Void.class);
