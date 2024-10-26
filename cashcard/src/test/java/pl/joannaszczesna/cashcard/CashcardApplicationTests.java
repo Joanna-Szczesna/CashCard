@@ -72,13 +72,29 @@ class CashcardApplicationTests {
 
         @Test
         void shouldReturnAPageOfCashCards() {
-            ResponseEntity<String> getListResponse = restTemplate.getForEntity("/cashcards?page=0&size=1", String.class);
+            ResponseEntity<String> getListResponse = restTemplate
+                    .getForEntity("/cashcards?page=0&size=1", String.class);
             DocumentContext documentContext = JsonPath.parse(getListResponse.getBody());
             JSONArray page = documentContext.read("$[*]");
 
             assertThat(getListResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(page.size()).isEqualTo(1);
         }
+
+        @Test
+        void whenRequestPageAndSortField_returnASortedPageOfCashCards() {
+            ResponseEntity<String> response = restTemplate
+                    .getForEntity("/cashcards?page=0&size=1&sort=amount,desc", String.class);
+
+            DocumentContext documentContext = JsonPath.parse(response.getBody());
+            JSONArray read = documentContext.read("$[*]");
+            double amount = documentContext.read("$[0].amount");
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(read.size()).isEqualTo(1);
+            assertThat(amount).isEqualTo(150.00);
+        }
+
     }
 
     @Nested
