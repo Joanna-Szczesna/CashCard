@@ -2,6 +2,7 @@ package pl.joannaszczesna.cashcard;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import net.minidev.json.JSONArray;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import java.net.URI;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class CashcardApplicationTests {
 
     public static final int EXIST_ID = 99;
@@ -54,7 +56,18 @@ class CashcardApplicationTests {
         @Test
         void whenListIsRequested_returnAllCashCard() {
             ResponseEntity<String> response = restTemplate.getForEntity("/cashcards", String.class);
+
+            DocumentContext documentContext = JsonPath.parse(response.getBody());
+            int cashCardCount = documentContext.read("$.length()");
+
+            JSONArray ids = documentContext.read("$..id");
+            assertThat(ids).containsExactlyInAnyOrder(99, 100, 101);
+
+            JSONArray amounts = documentContext.read("$..amount");
+
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(cashCardCount).isEqualTo(3);
+            assertThat(amounts).containsExactlyInAnyOrder(123.45, 1.0, 150.00);
         }
     }
 
