@@ -95,6 +95,18 @@ class CashcardApplicationTests {
             assertThat(amount).isEqualTo(150.00);
         }
 
+        @Test
+        void whenListIsRequestedWithNoParameters_returnASortedPageOfCashCardsUsingDefaultValues() {
+            ResponseEntity<String> getListResponse = restTemplate.getForEntity("/cashcards", String.class);
+
+            DocumentContext documentContext = JsonPath.parse(getListResponse.getBody());
+            JSONArray page = documentContext.read("$[*]");
+            JSONArray amounts = documentContext.read("$..amount");
+
+            assertThat(getListResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(page.size()).isEqualTo(3);
+            assertThat(amounts).containsExactly(1.00, 123.45, 150.00);
+        }
     }
 
     @Nested
