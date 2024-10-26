@@ -114,7 +114,7 @@ class CashcardApplicationTests {
 
         @Test
         void whenCreateANewCashCard_ReturnStatusCreated() {
-            CashCard newCashCard = new CashCard(null, 250.00);
+            CashCard newCashCard = new CashCard(null, 250.00, "sarah1");
             ResponseEntity<Void> createResponse = restTemplate.postForEntity(PATH_CASHCARDS, newCashCard, Void.class);
             URI locationOfNewCashCard = createResponse.getHeaders().getLocation();
             ResponseEntity<String> getResponse = restTemplate.getForEntity(locationOfNewCashCard, String.class);
