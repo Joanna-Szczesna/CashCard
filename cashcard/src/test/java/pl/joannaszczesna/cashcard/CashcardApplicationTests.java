@@ -20,10 +20,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class CashcardApplicationTests {
 
-    public static final int EXIST_ID = 99;
-    public static final int UNKNOWN_ID = 1000;
-    public static final String PATH_CASHCARDS = "/cashcards";
-    public static final double EXIST_AMOUNT = 123.45;
+    private static final int EXIST_ID = 99;
+    private static final int UNKNOWN_ID = 1000;
+    private static final String PATH_CASHCARDS = "/cashcards";
+    private static final double EXIST_AMOUNT = 123.45;
+    private static final String OWNER_FIRST = "sarah1";
+    private static final String PASSWORD_FIRST = "abc123";
 
     @Autowired
     TestRestTemplate restTemplate;
@@ -33,7 +35,9 @@ class CashcardApplicationTests {
         @Test
         void whenCashCardExist_returnACashCard() {
             String url = PATH_CASHCARDS + "/" + EXIST_ID;
-            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+            ResponseEntity<String> response = restTemplate
+                    .withBasicAuth(OWNER_FIRST, PASSWORD_FIRST)
+                    .getForEntity(url, String.class);
 
             DocumentContext documentContext = JsonPath.parse(response.getBody());
             Number id = documentContext.read("$.id");
@@ -47,7 +51,9 @@ class CashcardApplicationTests {
         @Test
         void whenCashCardIdUnknown_notReturnAnyCashCard() {
             String url = PATH_CASHCARDS + "/" + UNKNOWN_ID;
-            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+            ResponseEntity<String> response = restTemplate
+                    .withBasicAuth(OWNER_FIRST, PASSWORD_FIRST)
+                    .getForEntity(url, String.class);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
             assertThat(response.getBody()).isBlank();
@@ -55,7 +61,9 @@ class CashcardApplicationTests {
 
         @Test
         void whenListIsRequested_returnAllCashCard() {
-            ResponseEntity<String> response = restTemplate.getForEntity("/cashcards", String.class);
+            ResponseEntity<String> response = restTemplate
+                    .withBasicAuth(OWNER_FIRST, PASSWORD_FIRST)
+                    .getForEntity("/cashcards", String.class);
 
             DocumentContext documentContext = JsonPath.parse(response.getBody());
             int cashCardCount = documentContext.read("$.length()");
@@ -73,6 +81,7 @@ class CashcardApplicationTests {
         @Test
         void shouldReturnAPageOfCashCards() {
             ResponseEntity<String> getListResponse = restTemplate
+                    .withBasicAuth(OWNER_FIRST, PASSWORD_FIRST)
                     .getForEntity("/cashcards?page=0&size=1", String.class);
             DocumentContext documentContext = JsonPath.parse(getListResponse.getBody());
             JSONArray page = documentContext.read("$[*]");
@@ -84,6 +93,7 @@ class CashcardApplicationTests {
         @Test
         void whenRequestPageAndSortField_returnASortedPageOfCashCards() {
             ResponseEntity<String> response = restTemplate
+                    .withBasicAuth(OWNER_FIRST, PASSWORD_FIRST)
                     .getForEntity("/cashcards?page=0&size=1&sort=amount,desc", String.class);
 
             DocumentContext documentContext = JsonPath.parse(response.getBody());
@@ -97,7 +107,9 @@ class CashcardApplicationTests {
 
         @Test
         void whenListIsRequestedWithNoParameters_returnASortedPageOfCashCardsUsingDefaultValues() {
-            ResponseEntity<String> getListResponse = restTemplate.getForEntity("/cashcards", String.class);
+            ResponseEntity<String> getListResponse = restTemplate
+                    .withBasicAuth(OWNER_FIRST, PASSWORD_FIRST)
+                    .getForEntity("/cashcards", String.class);
 
             DocumentContext documentContext = JsonPath.parse(getListResponse.getBody());
             JSONArray page = documentContext.read("$[*]");
@@ -115,9 +127,14 @@ class CashcardApplicationTests {
         @Test
         void whenCreateANewCashCard_ReturnStatusCreated() {
             CashCard newCashCard = new CashCard(null, 250.00, "sarah1");
-            ResponseEntity<Void> createResponse = restTemplate.postForEntity(PATH_CASHCARDS, newCashCard, Void.class);
+            ResponseEntity<Void> createResponse = restTemplate
+                    .withBasicAuth(OWNER_FIRST, PASSWORD_FIRST)
+                    .postForEntity(PATH_CASHCARDS, newCashCard, Void.class);
             URI locationOfNewCashCard = createResponse.getHeaders().getLocation();
-            ResponseEntity<String> getResponse = restTemplate.getForEntity(locationOfNewCashCard, String.class);
+
+            ResponseEntity<String> getResponse = restTemplate
+                    .withBasicAuth(OWNER_FIRST, PASSWORD_FIRST )
+                    .getForEntity(locationOfNewCashCard, String.class);
 
             DocumentContext documentContext = JsonPath.parse(getResponse.getBody());
             Number id = documentContext.read("$.id");
@@ -129,4 +146,5 @@ class CashcardApplicationTests {
             assertThat(amount).isEqualTo(250.00);
         }
     }
+
 }
