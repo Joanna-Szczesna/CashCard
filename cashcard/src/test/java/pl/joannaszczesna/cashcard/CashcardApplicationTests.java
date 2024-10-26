@@ -50,6 +50,12 @@ class CashcardApplicationTests {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
             assertThat(response.getBody()).isBlank();
         }
+
+        @Test
+        void whenListIsRequested_returnAllCashCard() {
+            ResponseEntity<String> response = restTemplate.getForEntity("/cashcards", String.class);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        }
     }
 
     @Nested
