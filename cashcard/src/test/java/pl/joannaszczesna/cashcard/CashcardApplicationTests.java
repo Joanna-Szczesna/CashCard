@@ -162,12 +162,21 @@ class CashcardApplicationTests {
                     .getForEntity("/cashcards/99", String.class);
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         }
+
         @Test
-        void shouldRejectUsersWhoAreNotCardOwners() {
+        void whenUserNotOwnAnyCard_rejectUser() {
             ResponseEntity<String> response = restTemplate
                     .withBasicAuth("hank-owns-no-cards", "qrs456")
                     .getForEntity("/cashcards/99", String.class);
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        }
+
+        @Test
+        void whenUserIsNotOwnerToCashCard_notAllowAccess() {
+            ResponseEntity<String> response = restTemplate
+                    .withBasicAuth(OWNER_FIRST, PASSWORD_FIRST)
+                    .getForEntity("/cashcards/102", String.class); // john2 data
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         }
 
     }
