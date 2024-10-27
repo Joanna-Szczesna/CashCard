@@ -187,7 +187,7 @@ class CashcardApplicationTests {
     class PutUpdate {
 
         @Test
-        void shouldUpdateAnExistingCashCard() {
+        void whenCashCardExisting_update() {
             Double newAmount = 19.99;
             CashCard cashCardUpdate = new CashCard(null, newAmount, null);
             HttpEntity<CashCard> request = new HttpEntity<>(cashCardUpdate);
@@ -207,6 +207,29 @@ class CashcardApplicationTests {
             assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(id).isEqualTo(99);
             assertThat(amount).isEqualTo(newAmount);
+        }
+
+        @Test
+        void whenACashCardThatDoesNotExist_notUpdate() {
+            Double newAmount = 19.99;
+            CashCard unknownCard = new CashCard(null, newAmount, null);
+            HttpEntity<CashCard> request = new HttpEntity<>(unknownCard);
+            ResponseEntity<Void> response = restTemplate
+                    .withBasicAuth(OWNER_FIRST, PASSWORD_FIRST)
+                    .exchange("/cashcards/99999", HttpMethod.PUT, request, Void.class);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        }
+
+        @Test
+        void whenACashCardThatIsOwnedBySomeoneElse_notUpdate() {
+            CashCard johnCard = new CashCard(null, 333.33, null);
+            HttpEntity<CashCard> request = new HttpEntity<>(johnCard);
+            ResponseEntity<Void> response = restTemplate
+                    .withBasicAuth("sarah1", "abc123")
+                    .exchange("/cashcards/102", HttpMethod.PUT, request, Void.class);
+            
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         }
     }
 }
