@@ -242,7 +242,7 @@ class CashcardApplicationTests {
             ResponseEntity<Void> deleteResponse = restTemplate
                     .withBasicAuth(OWNER_FIRST, PASSWORD_FIRST)
                     .exchange(PATH_FIRST, HttpMethod.DELETE, null, Void.class);
-            
+
             ResponseEntity<String> getResponse = restTemplate
                     .withBasicAuth(OWNER_FIRST, PASSWORD_FIRST)
                     .getForEntity(PATH_FIRST, String.class);
