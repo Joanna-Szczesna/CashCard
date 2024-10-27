@@ -28,6 +28,7 @@ class CashcardApplicationTests {
     private static final double EXIST_AMOUNT = 123.45;
     private static final String OWNER_FIRST = "sarah1";
     private static final String PASSWORD_FIRST = "abc123";
+    public static final String PATH_FIRST = "/cashcards/99";
 
     @Autowired
     TestRestTemplate restTemplate;
@@ -156,12 +157,12 @@ class CashcardApplicationTests {
             String badPassword = "BAD-PASSWORD";
             ResponseEntity<String> response = restTemplate
                     .withBasicAuth(badUsername, PASSWORD_FIRST)
-                    .getForEntity("/cashcards/99", String.class);
+                    .getForEntity(PATH_FIRST, String.class);
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 
             response = restTemplate
                     .withBasicAuth(OWNER_FIRST, badPassword)
-                    .getForEntity("/cashcards/99", String.class);
+                    .getForEntity(PATH_FIRST, String.class);
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         }
 
@@ -169,7 +170,7 @@ class CashcardApplicationTests {
         void whenUserNotOwnAnyCard_rejectUser() {
             ResponseEntity<String> response = restTemplate
                     .withBasicAuth("hank-owns-no-cards", "qrs456")
-                    .getForEntity("/cashcards/99", String.class);
+                    .getForEntity(PATH_FIRST, String.class);
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         }
 
@@ -193,11 +194,11 @@ class CashcardApplicationTests {
             HttpEntity<CashCard> request = new HttpEntity<>(cashCardUpdate);
             ResponseEntity<Void> putResponse = restTemplate
                     .withBasicAuth(OWNER_FIRST, PASSWORD_FIRST)
-                    .exchange("/cashcards/99", HttpMethod.PUT, request, Void.class);
+                    .exchange(PATH_FIRST, HttpMethod.PUT, request, Void.class);
 
             ResponseEntity<String> getResponse = restTemplate
                     .withBasicAuth(OWNER_FIRST, PASSWORD_FIRST)
-                    .getForEntity("/cashcards/99", String.class);
+                    .getForEntity(PATH_FIRST, String.class);
 
             DocumentContext documentContext = JsonPath.parse(getResponse.getBody());
             Number id = documentContext.read("$.id");
@@ -228,8 +229,26 @@ class CashcardApplicationTests {
             ResponseEntity<Void> response = restTemplate
                     .withBasicAuth("sarah1", "abc123")
                     .exchange("/cashcards/102", HttpMethod.PUT, request, Void.class);
-            
+
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @Nested
+    class DeleteRemove {
+        @Test
+        @DirtiesContext
+        void existingCashCard_delete() {
+            ResponseEntity<Void> deleteResponse = restTemplate
+                    .withBasicAuth(OWNER_FIRST, PASSWORD_FIRST)
+                    .exchange(PATH_FIRST, HttpMethod.DELETE, null, Void.class);
+            
+            ResponseEntity<String> getResponse = restTemplate
+                    .withBasicAuth(OWNER_FIRST, PASSWORD_FIRST)
+                    .getForEntity(PATH_FIRST, String.class);
+
+            assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+            assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         }
     }
 }
