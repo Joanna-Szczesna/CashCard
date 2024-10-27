@@ -125,7 +125,7 @@ class CashcardApplicationTests {
     class PostCreate {
         @Test
         void whenCreateANewCashCard_ReturnStatusCreated() {
-            CashCard newCashCard = new CashCard(null, 250.00, "sarah1");
+            CashCard newCashCard = new CashCard(null, 250.00, null);
             ResponseEntity<Void> createResponse = restTemplate
                     .withBasicAuth(OWNER_FIRST, PASSWORD_FIRST)
                     .postForEntity(PATH_CASHCARDS, newCashCard, Void.class);
